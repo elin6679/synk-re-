@@ -42,6 +42,60 @@ const MATERIAL_MAP = {
   linen: { label: '린넨', pattern: HapticPattern.LINEN },
 };
 
+const generateSvgFallback = (mainColor: string, subColor: string, style: string) => {
+  const colorMap: Record<string, string> = {
+    '남색': '#1e293b', 
+    '초록': '#064e3b', 
+    '분홍': '#f472b6', 
+    '상아': '#fafaf9', 
+    '쥐색': '#44403c',
+    '차골': '#374151',
+    '겨자': '#d97706'
+  };
+  
+  let mainHex = '#0f172a';
+  Object.keys(colorMap).forEach(k => {
+    if (mainColor.includes(k)) mainHex = colorMap[k];
+  });
+
+  let subHex = '#3b82f6';
+  Object.keys(colorMap).forEach(k => {
+    if (subColor.includes(k)) subHex = colorMap[k];
+  });
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 800" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="${mainHex}"/>
+        <stop offset="100%" stop-color="#090d16"/>
+      </linearGradient>
+    </defs>
+    <rect width="640" height="800" fill="url(#bgGrad)"/>
+    <circle cx="320" cy="360" r="160" fill="white" fill-opacity="0.08"/>
+    <path d="M320,300 C320,250 360,250 345,225" stroke="${subHex}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M200,380 L320,300 L440,380 Z" stroke="${subHex}" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+    <text x="320" y="540" fill="#ffffff" font-family="system-ui, sans-serif" font-weight="900" font-size="36" text-anchor="middle" letter-spacing="2">SYNK CLOSET</text>
+    <text x="320" y="585" fill="#ffffff" fill-opacity="0.6" font-family="monospace" font-size="18" text-anchor="middle">SERIAL #S${Math.floor(Math.random() * 90000 + 10000)}</text>
+    <text x="320" y="710" fill="#ffffff" font-family="system-ui, sans-serif" font-weight="bold" font-size="22" text-anchor="middle">${style.split(' (')[0]} 스타일</text>
+    <circle cx="280" cy="640" r="24" fill="${mainHex}" stroke="white" stroke-width="3"/>
+    <circle cx="360" cy="640" r="24" fill="${subHex}" stroke="white" stroke-width="3"/>
+  </svg>`;
+  
+  try {
+    return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+  } catch (e) {
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+};
+
+const getItemImageUrl = (item: ClothingItem) => {
+  if (item.imageUrl && item.imageUrl.trim() !== '') {
+    return item.imageUrl;
+  }
+  const materialLabel = item.material ? MATERIAL_MAP[item.material].label : '코튼';
+  return generateSvgFallback(item.color || '쥐색', item.texture || '초록', materialLabel || '어반 캐주얼');
+};
+
 export const Closet: React.FC<ClosetProps> = ({ onNavigate }) => {
   const [items, setItems] = useState<ClothingItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -283,11 +337,10 @@ export const Closet: React.FC<ClosetProps> = ({ onNavigate }) => {
             {items.map((item) => (
               <motion.div 
                 key={item.id}
-                layoutId={item.id}
                 onClick={() => handleSelectItem(item)}
                 className="break-inside-avoid bg-white rounded-3xl overflow-hidden shadow-md border border-synk-navy/5 relative group cursor-pointer active:scale-95 transition-transform"
               >
-                <img src={item.imageUrl} alt={item.description} className="w-full h-auto object-cover" />
+                <img src={getItemImageUrl(item)} alt={item.description} className="w-full h-auto object-cover" />
                 <div className="p-4 bg-white text-left">
                   <h3 className="font-black text-sm text-synk-navy truncate mb-1">{item.name}</h3>
                   <div className="flex items-center justify-between">
@@ -460,10 +513,9 @@ export const Closet: React.FC<ClosetProps> = ({ onNavigate }) => {
             <div className="flex-1 flex flex-col gap-6 overflow-y-auto custom-scrollbar pb-16">
               
               {/* Image Touch Experience section */}
-              <div className="relative group aspect-[3/4] max-h-[35vh] w-full bg-synk-offwhite rounded-[2.5rem] overflow-hidden shadow-xl">
-                <motion.img 
-                  layoutId={selectedItem.id}
-                  src={selectedItem.imageUrl} 
+              <div className="relative group w-full h-[300px] sm:h-[350px] shrink-0 bg-synk-offwhite rounded-[2.5rem] overflow-hidden shadow-xl">
+                <img 
+                  src={getItemImageUrl(selectedItem)} 
                   alt={selectedItem.description}
                   className="w-full h-full object-cover select-none pointer-events-none"
                 />
