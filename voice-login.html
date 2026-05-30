@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Authentication System - SYNK</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Inter, JetBrains Mono) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+            background-color: #F8F6F4;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Soft custom aesthetics */
+        .beauty-gradient {
+            background: linear-gradient(135deg, #FFF9FA 0%, #F5F1EE 100%);
+        }
+        .mic-active-glow {
+            box-shadow: 0 0 20px rgba(255, 133, 161, 0.4);
+        }
+    </style>
+</head>
+<body class="beauty-gradient min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div id="login-card" class="w-full max-w-md bg-white rounded-[2.5rem] border border-stone-200/60 p-8 shadow-2xl relative overflow-hidden">
+        
+        <!-- UI Header -->
+        <div class="text-center space-y-3 mb-8">
+            <div class="w-16 h-16 bg-[#121E31] rounded-[1.25rem] flex items-center justify-center mx-auto shadow-lg shadow-[#121E31]/15">
+                <!-- Lock Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-black text-stone-900 tracking-tight">SYNK VOICE</h1>
+            <p class="text-sm font-medium text-stone-500">스마트하고 안전한 음성 제어 본인 안심 로그인</p>
+        </div>
+
+        <!-- Notification / Status Banner -->
+        <div id="status-card" class="mb-6 p-4 rounded-2xl bg-stone-50 border border-stone-100 flex items-start gap-3 transition-all">
+            <div class="p-1 rounded-full bg-blue-100 text-blue-600 mt-0.5" id="status-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="flex-1 space-y-1">
+                <p id="status-title" class="text-xs font-black uppercase tracking-wider text-stone-400">시스템 현황</p>
+                <p id="status-message" class="text-sm font-bold text-stone-700 leading-snug">로그인을 하기 위해 대기 중입니다. '음성 인식 시작' 단추를 누르면 마이크가 켜집니다.</p>
+            </div>
+        </div>
+
+        <!-- Real-time Auditory Feedback Box (Interim transcriptions) -->
+        <div id="speech-live-box" class="mb-6 p-4 bg-stone-950 text-white rounded-2xl min-h-[4.5rem] flex flex-col justify-between border-2 border-[#FF85A1]/0 transition-all">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-mono tracking-widest text-[#FF85A1] uppercase font-bold flex items-center gap-1.5">
+                    <span id="live-indicator" class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+                    Speech Input Level
+                </span>
+                <span id="current-target" class="text-[10px] bg-white/10 px-2 py-0.5 rounded-full font-bold text-stone-300">
+                    입력 대기 인쇄기
+                </span>
+            </div>
+            <p id="live-transcript" class="text-base font-bold text-stone-300 italic">"음성 장치를 구동하여 직접 말씀해 보세요..."</p>
+        </div>
+
+        <!-- Form Elements -->
+        <form id="login-form" class="space-y-4">
+            <!-- Email Field -->
+            <div class="space-y-1.5 relative">
+                <label id="label-email" class="text-xs font-black uppercase text-stone-500 tracking-wider flex items-center justify-between">
+                    <span>이메일 주소</span>
+                    <span id="target-indicator-email" class="text-[10px] text-blue-500 font-bold hidden">● 현재 음성 타겟</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="email" 
+                        id="email-input" 
+                        placeholder="example@gmail.com" 
+                        class="w-full bg-stone-50 h-14 pl-4 pr-11 text-stone-900 border border-stone-200 rounded-2xl font-bold focus:outline-none focus:border-[#FF85A1] focus:bg-white transition-all"
+                    >
+                    <div class="absolute right-4 top-4 text-stone-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="space-y-1.5">
+                <label id="label-password" class="text-xs font-black uppercase text-stone-500 tracking-wider flex items-center justify-between">
+                    <span>비밀번호</span>
+                    <span id="target-indicator-password" class="text-[10px] text-blue-500 font-bold hidden">● 현재 음성 타겟</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="password" 
+                        id="password-input" 
+                        placeholder="••••••••" 
+                        class="w-full bg-stone-50 h-14 pl-4 pr-11 text-stone-900 border border-stone-200 rounded-2xl font-bold focus:outline-none focus:border-[#FF85A1] focus:bg-white transition-all"
+                    >
+                    <div class="absolute right-4 top-4 text-stone-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Button Action Grid -->
+            <div class="grid grid-cols-1 gap-3 pt-4">
+                <!-- Listening Trigger Buttons -->
+                <button 
+                    type="button" 
+                    id="speech-toggle-btn" 
+                    class="w-full h-16 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-base flex items-center justify-center gap-3 transition-all active:scale-98 shadow-lg shadow-stone-900/10"
+                >
+                    <div class="w-6 h-6 rounded-full bg-[#FF85A1]/20 flex items-center justify-center text-[#FF85A1]" id="btn-mic-icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <span id="voice-btn-text">음성 인식 시작</span>
+                </button>
+
+                <!-- Regular Manual Trigger Sign In Button -->
+                <button 
+                    type="submit" 
+                    id="manual-submit-btn" 
+                    class="w-full h-14 rounded-2xl bg-[#FF85A1] hover:bg-[#FF85A1]/95 text-white font-black text-sm uppercase tracking-wider transition-all active:scale-98"
+                >
+                    직접 로그인 실행
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-stone-100 flex items-center justify-between text-xs text-stone-400">
+            <span class="font-bold">SPEECH SYSTEM V1.0</span>
+            <span class="font-bold text-[#FF85A1]">SYNK SECURE ACCESS</span>
+        </div>
+    </div>
+
+    <!-- Firebase Library CDN & Custom Script Injection -->
+    <script type="module">
+        // 4. Firebase 연동: Firebase v10+ 웹 CDN 라이브러리를 사용하여 모듈 방식으로 초기화 및 로그인 로직 구현
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Firebase Configuration - 빈 Placeholder 설정을 지정
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY_PLACEHOLDER",
+            authDomain: "YOUR_AUTH_DOMAIN_PLACEHOLDER",
+            projectId: "YOUR_PROJECT_ID_PLACEHOLDER",
+            storageBucket: "YOUR_STORAGE_BUCKET_PLACEHOLDER",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID_PLACEHOLDER",
+            appId: "YOUR_APP_ID_PLACEHOLDER"
+        };
+
+        // Firebase 초기화
+        let authObj = null;
+        try {
+            const app = initializeApp(firebaseConfig);
+            authObj = getAuth(app);
+            console.log("Firebase Auth v10 Initialized successfully (Config placeholder)");
+        } catch (error) {
+            console.warn("Firebase Config values are empty placeholders. Simulation fallback enabled.", error);
+        }
+
+        // Global DOM Elements
+        const emailInput = document.getElementById("email-input");
+        const passwordInput = document.getElementById("password-input");
+        const speechToggleBtn = document.getElementById("speech-toggle-btn");
+        const btnMicIconWrapper = document.getElementById("btn-mic-icon-wrapper");
+        const voiceBtnText = document.getElementById("voice-btn-text");
+        const liveTranscript = document.getElementById("live-transcript");
+        const currentTargetDisplay = document.getElementById("current-target");
+        const liveIndicator = document.getElementById("live-indicator");
+        const speechLiveBox = document.getElementById("speech-live-box");
+        const statusCard = document.getElementById("status-card");
+        const statusIcon = document.getElementById("status-icon");
+        const statusMessage = document.getElementById("status-message");
+        const loginForm = document.getElementById("login-form");
+
+        const indicatorEmail = document.getElementById("target-indicator-email");
+        const indicatorPassword = document.getElementById("target-indicator-password");
+
+        // Speech Recognition Flow Variables
+        let isListening = false;
+        let speechTarget = ""; // "email" | "password" | ""
+        let recognition = null;
+
+        // Custom Korean Voice Speech Corpus Polish Utility
+        // 3. 한국어 말뭉치 보정 로직: "골뱅이"-> "@", "닷컴"-> ".com", "지메일"-> "gmail" 자동 치환 및 공백 제거
+        function polishSpokenEmailText(spokenText) {
+            if (!spokenText) return "";
+            
+            let polished = spokenText
+                // Remove all whitespace
+                .replace(/\s+/g, '')
+                // Word matching replacements for popular e-mail terms
+                .replace(/골뱅이/g, '@')
+                .replace(/닷컴/g, '.com')
+                .replace(/지메일/g, 'gmail')
+                .replace(/네이버/g, 'naver')
+                .replace(/다음/g, 'daum')
+                .replace(/점내이트/g, '.nate')
+                .replace(/한메일/g, 'hanmail')
+                // Basic cleanup
+                .replace(/점컴/g, '.com')
+                .replace(/점네트/g, '.net')
+                .replace(/점케이알/g, '.kr')
+                .replace(/점원/g, '.org');
+                
+            return polished.toLowerCase();
+        }
+
+        // Beautiful System Display Updater
+        function updateSystemStatus(type, title, message) {
+            statusMessage.innerText = message;
+            document.getElementById("status-title").innerText = title;
+
+            // Class cleanup
+            statusCard.classList.remove("bg-blue-50", "border-blue-100", "bg-emerald-50", "border-emerald-100", "bg-red-50", "border-red-100", "bg-amber-50", "border-amber-100");
+            statusIcon.classList.remove("bg-blue-100", "text-blue-600", "bg-emerald-100", "text-emerald-600", "bg-red-100", "text-red-00", "bg-amber-100", "text-amber-600");
+
+            if (type === "info") {
+                statusCard.classList.add("bg-blue-50", "border-blue-100");
+                statusIcon.classList.add("bg-blue-100", "text-blue-600");
+            } else if (type === "success") {
+                statusCard.classList.add("bg-emerald-50", "border-emerald-100");
+                statusIcon.classList.add("bg-emerald-100", "text-emerald-600");
+            } else if (type === "error") {
+                statusCard.classList.add("bg-red-50", "border-red-100");
+                statusIcon.classList.add("bg-red-100", "text-red-600");
+            } else if (type === "listening") {
+                statusCard.classList.add("bg-amber-50", "border-amber-100");
+                statusIcon.classList.add("bg-amber-100", "text-amber-600");
+            }
+        }
+
+        // Active Input Target Visual Toggle
+        function highlightTargetVisual(target) {
+            indicatorEmail.classList.add("hidden");
+            indicatorPassword.classList.add("hidden");
+            
+            emailInput.classList.remove("border-blue-400", "ring-2", "ring-blue-100");
+            passwordInput.classList.remove("border-blue-400", "ring-2", "ring-blue-100");
+
+            if (target === "email") {
+                indicatorEmail.classList.remove("hidden");
+                emailInput.classList.add("border-blue-400", "ring-2", "ring-blue-100");
+                currentTargetDisplay.innerText = "이메일 입력 모드";
+            } else if (target === "password") {
+                indicatorPassword.classList.remove("hidden");
+                passwordInput.classList.add("border-blue-400", "ring-2", "ring-blue-100");
+                currentTargetDisplay.innerText = "비밀번호 입력 모드";
+            } else {
+                currentTargetDisplay.innerText = "명령어 대기 모드";
+            }
+        }
+
+        // Check Speech Recognition Availability
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            updateSystemStatus("error", "음성 호환 에러", "현재 브라우저는 Web Speech API를 완벽 지원하지 않습니다. 구글 크롬 데스크톱 브라우저를 적극 권장합니다.");
+            speechToggleBtn.disabled = true;
+            speechToggleBtn.classList.add("opacity-50", "cursor-not-allowed");
+        } else {
+            // Setup & Bind Speech Recognition Object
+            recognition = new SpeechRecognition();
+            recognition.lang = "ko-KR";
+            recognition.interimResults = true;
+            recognition.continuous = true; // Stay alive for voice sequences!
+
+            recognition.onstart = () => {
+                isListening = true;
+                speechToggleBtn.classList.add("bg-red-500", "hover:bg-red-600", "mic-active-glow");
+                speechToggleBtn.classList.remove("bg-stone-900", "hover:bg-stone-800");
+                btnMicIconWrapper.classList.add("bg-white/20", "text-white");
+                voiceBtnText.innerText = "음성 제어 청취 중...";
+                liveIndicator.classList.add("bg-[#FF85A1]");
+                liveIndicator.classList.remove("bg-stone-500");
+                speechLiveBox.classList.add("border-[#FF85A1]");
+                
+                updateSystemStatus("listening", "청취 진행 중", "'이메일' 혹은 '비밀번호'라고 말해서 입력 타겟을 먼저 정해보세요. 완료되면 '로그인'이라고 명령하세요!");
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                speechToggleBtn.classList.remove("bg-red-500", "hover:bg-red-600", "mic-active-glow");
+                speechToggleBtn.classList.add("bg-stone-900", "hover:bg-stone-800");
+                btnMicIconWrapper.classList.remove("bg-white/20", "text-white");
+                voiceBtnText.innerText = "음성 인식 시작";
+                liveIndicator.classList.remove("bg-[#FF85A1]");
+                liveIndicator.classList.add("bg-stone-500");
+                speechLiveBox.classList.remove("border-[#FF85A1]");
+                
+                if (speechTarget) {
+                    highlightTargetVisual("");
+                    speechTarget = "";
+                }
+            };
+
+            // 2. 음성 인식 제어 플로우: 코어 분석 핸들러
+            recognition.onresult = (event) => {
+                let interimTranscript = "";
+                let finalTranscript = "";
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                const currentText = (finalTranscript || interimTranscript).trim();
+                
+                if (currentText) {
+                    liveTranscript.innerText = `"${currentText}"`;
+                }
+
+                if (finalTranscript) {
+                    const cleanCommandText = finalTranscript.trim().replace(/\s+/g, "");
+                    console.log("Speech Final Command:", cleanCommandText);
+
+                    // 1단계: 입력 상태 설정 명령어 파싱 (전환)
+                    if (cleanCommandText.includes("이메일")) {
+                        speechTarget = "email";
+                        highlightTargetVisual("email");
+                        liveTranscript.innerText = "이메일 모드로 진입했습니다. 주소를 알려주세요.";
+                        updateSystemStatus("listening", "이메일 타겟팅됨", "이제 이메일 주소를 말씀하시면 텍스트 교정을 가하여 입력됩니다.");
+                        return;
+                    } 
+                    
+                    if (cleanCommandText.includes("비밀번호")) {
+                        speechTarget = "password";
+                        highlightTargetVisual("password");
+                        liveTranscript.innerText = "비밀번호 모드로 진입했습니다. 비밀번호를 말씀해 주세요.";
+                        updateSystemStatus("listening", "비밀번호 타겟팅됨", "이제 말씀하시는 영문 및 숫자는 일절 공백 없이 비밀번호란으로 입력됩니다.");
+                        return;
+                    }
+
+                    // 3단계: 로그인 명령어 실행 파싱
+                    if (cleanCommandText === "로그인" || cleanCommandText.includes("로그인하기")) {
+                        liveTranscript.innerText = "파이어베이스 로그인을 원격 실행합니다...";
+                        highlightTargetVisual("");
+                        executeFirebaseLogin();
+                        return;
+                    }
+
+                    // 2단계: 각 지정된 타겟에 텍스트 입력 및 정제
+                    if (speechTarget === "email") {
+                        const refinedEmail = polishSpokenEmailText(finalTranscript);
+                        emailInput.value = refinedEmail;
+                        liveTranscript.innerText = `[치환완료] ${refinedEmail}`;
+                    } else if (speechTarget === "password") {
+                        // Passwords generally shouldn't have arbitrary spaces either
+                        const refinedPassword = finalTranscript.replace(/\s+/g, "");
+                        passwordInput.value = refinedPassword;
+                        liveTranscript.innerText = `[입력완료] ${refinedPassword.replace(/./g, "*")}`;
+                    }
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech Recognition Error:", event.error);
+                if (event.error === 'not-allowed') {
+                    updateSystemStatus("error", "마이크 보안 제어 거부", "마이크 사용 승인을 받지 못했습니다. 크롬 브라우저 설정에서 이 탭의 마이크를 상시 허용해 주세요.");
+                } else {
+                    updateSystemStatus("error", "청취 연결 끊김", `음성 통신 장애 (${event.error}). 다시 시도해 보세요.`);
+                }
+                isListening = false;
+            };
+        }
+
+        // Playback / Stop Mic control
+        function toggleSpeechService() {
+            if (!recognition) return;
+            if (isListening) {
+                recognition.stop();
+            } else {
+                liveTranscript.innerText = "듣고 있습니다... 말씀해 주세요.";
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.warn("Speech API is already busy:", e);
+                }
+            }
+        }
+
+        speechToggleBtn.addEventListener("click", toggleSpeechService);
+
+        // Core Trigger Function matching Requirements 2 and 4
+        function executeFirebaseLogin() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                updateSystemStatus("error", "입력 데이터 유실", "이메일 주소나 비밀번호가 비어있습니다. 먼저 채워 주신 뒤 로그인 명령을 하십시오.");
+                return;
+            }
+
+            updateSystemStatus("info", "로그인 보안 검사 진행 중", "Firebase Module API를 호출하여 자격인증을 개시합니다...");
+
+            // Firebase Authentication login with email and credentials
+            if (authObj) {
+                signInWithEmailAndPassword(authObj, email, password)
+                    .then((userCredential) => {
+                        const user = userCredential.user;
+                        updateSystemStatus("success", "인증 통과 완료", `환영합니다! ${user.email} 계정으로 파이어베이스 세션 소켓이 빌드되었습니다.`);
+                        liveTranscript.innerText = "로그인 성공! 원본 화면으로 이행합니다.";
+                        alert(`Firebase Login Success: \nEmail: ${user.email} (UID: ${user.uid})`);
+                    })
+                    .catch((error) => {
+                        console.error("Firebase Core Error:", error.code, error.message);
+                        let feedback = "인증 에러: 비밀번호 또는 계정 명세를 대조할 수 없거나, 플레이스 홀더 SDK 상태입니다.";
+                        if (error.code === "auth/invalid-api-key") {
+                            feedback = "[모의 로그인 성공] Firebase config가 원본 플레이스홀더 상태이므로 클라이언트 로컬 안심 세션으로 성공을 대체 처리했습니다.";
+                            updateSystemStatus("success", "모의 인증 완료 (Demo)", feedback);
+                        } else {
+                            updateSystemStatus("error", "파이어베이스 보안 오류", `${error.code}: ${error.message}`);
+                        }
+                    });
+            } else {
+                // Config placeholder fallback
+                setTimeout(() => {
+                    const fallbackMsg = `[시뮬레이트 세션 성공] \n이메일: ${email}\n성공적으로 연동되었습니다! (Firebase App config가 플레이스홀더라 임시 대체됨)`;
+                    updateSystemStatus("success", "로그인 정상 수립", fallbackMsg);
+                    alert(fallbackMsg);
+                }, 1000);
+            }
+        }
+
+        // Direct Native Web Form handler
+        loginForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            executeFirebaseLogin();
+        });
+    </script>
+</body>
+</html>

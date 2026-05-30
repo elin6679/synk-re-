@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Information about the user including auth info, body measurements and settings",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "profileImageUrl": { "type": "string" },
+        "role": { "type": "string" },
+        "createdAt": { "type": "object" },
+        "lastLoginAt": { "type": "object" },
+        "measurements": {
+          "type": "object",
+          "properties": {
+            "height": { "type": "number" },
+            "shoulder": { "type": "number" },
+            "chest": { "type": "number" },
+            "waist": { "type": "number" }
+          }
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "speechRate": { "type": "number" },
+            "speechVolume": { "type": "number" },
+            "hapticIntensity": { "type": "number" },
+            "detailMode": { "type": "string" }
+          }
+        },
+        "skinTone": { "type": "string" }
+      },
+      "required": ["name", "settings", "email"]
+    },
+    "ClothingItem": {
+      "title": "Clothing Item",
+      "description": "An item of clothing stored in the digital closet",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "color": { "type": "string" },
+        "texture": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "ownerId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user profiles"
+    },
+    "/users/{userId}/closet/{itemId}": {
+      "schema": "ClothingItem",
+      "description": "User's individual clothing items"
+    }
+  }
+}

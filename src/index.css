@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Dongle:wght@300;400;700&family=Gowun+Dodum&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Gowun Dodum", "Quicksand", sans-serif;
+  --font-display: "Dongle", sans-serif;
+  
+  /* High contrast accessible dark mode theme definitions */
+  --color-synk-offwhite: #000000; /* Pure black to eliminate glare and maximize contrast */
+  --color-synk-navy: #FFFFFF; /* High-contrast white for bold text readable on black */
+  --color-synk-grey: #CBD5E1; /* Highly visible light gray for subtitles */
+  --color-synk-blue: #00DFFF; /* Super vibrant neon aqua for core actions (high-contrast ratio on black is over 15:1) */
+  --color-synk-yellow: #FFFF00; /* Blazing primary high-contrast neon yellow */
+  --color-synk-cyan: #00FFFF; /* Bright accessible cyan */
+  --color-synk-pink: #FF3366; /* Vibrant accessible neon hot pink */
+  --color-synk-lavender: #A5B4FC; /* Brighter lavender for contrast */
+  --color-synk-peach: #FFD3B4; /* Brighter peach for contrast */
+  --color-synk-primary: #00DFFF;
+  --color-beauty-pink: #FF2E79; /* Vibrant accessible beauty color */
+  --color-beauty-beige: #000000; /* Pure black background for beauty segments */
+  --color-beauty-gold: #FFD700; /* Brilliant accessible gold */
+  --color-neon-green: #39FF14; /* True high-contrast fluorescent neon green */
+  --color-cyber-blue: #00FFFF; /* Pure fluorescent neon cyan */
+}
+
+@layer base {
+  body {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    @apply font-sans antialiased overflow-hidden select-none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Force background nodes to high contrast black on pages */
+  .bg-beauty-beige {
+    background-color: #000000 !important;
+    background-image: none !important;
+  }
+
+  .bg-synk-offwhite {
+    background-color: #000000 !important;
+  }
+
+  /* Transform general card layers to High Contrast dark cards with crystal-clear borders */
+  .bg-white {
+    background-color: #121824 !important; /* Deep charcoal dark grey for card layers */
+    border: 3px solid rgba(255, 255, 255, 0.2) !important; /* Clear physical borders separating targets */
+  }
+
+  /* Specific high contrast text modifier mappings for opacities */
+  .text-synk-navy\/60,
+  .text-synk-navy\/50,
+  .text-synk-navy\/40,
+  .text-synk-navy\/30 {
+    color: #CBD5E1 !important; /* Force secondary content to highly visible silver-grey instead of dim opacity */
+  }
+
+  /* Keep other opacities readable */
+  .text-white\/60,
+  .text-white\/70,
+  .text-white\/80 {
+    color: #FFFFFF !important;
+    opacity: 1 !important;
+  }
+
+  /* Solid styling for range inputs for visibility */
+  input[type="range"] {
+    background-color: #1E293B !important;
+    border: 2px solid #FFFFFF !important;
+    height: 1.5rem !important;
+    border-radius: 9999px !important;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    background-color: #FFFF00 !important; /* Vivid bright yellow knob */
+    border: 3px solid #000000 !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    -webkit-appearance: none !important;
+  }
+}
+
+@layer utilities {
+  .beauty-shadow {
+    box-shadow: 0 0 20px rgba(0, 223, 255, 0.15);
+    border: 2px solid rgba(0, 223, 255, 0.3) !important;
+  }
+
+  .beauty-glow {
+    filter: drop-shadow(0 0 15px rgba(255, 46, 121, 0.6));
+  }
+
+  .tech-border {
+    border: 3px solid #00FFFF !important;
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.25);
+  }
+
+  .neon-glow-green {
+    filter: drop-shadow(0 0 12px rgba(57, 255, 20, 0.8));
+  }
+
+  .neon-glow-blue {
+    filter: drop-shadow(0 0 12px rgba(0, 223, 255, 0.8));
+  }
+
+  .text-balloon {
+    color: #FFFF00 !important; /* Bright Yellow text for strong hero header */
+    text-shadow: 0 0 8px rgba(255, 255, 0, 0.6);
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+  }
+
+  .puffy-card {
+    background: #121824 !important;
+    border: 3px solid #00FFFF !important;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2) !important;
+  }
+
+  /* General backgrounds of standard lists & tags in details */
+  .bg-synk-blue\/10 {
+    background-color: rgba(0, 223, 255, 0.2) !important;
+    border: 2px solid #00DFFF !important;
+  }
+
+  .bg-amber-50 {
+    background-color: #1A1305 !important; /* Dark warm background for warning box */
+    border-color: #FFE600 !important;
+  }
+
+  .text-amber-800, .text-amber-700\/90 {
+    color: #FFFF00 !important; /* Neon yellow for safety box texts */
+  }
+
+  .bg-red-50 {
+    background-color: #24050A !important; /* Dark red contrast card */
+    border-color: #FF3366 !important;
+  }
+
+  .text-red-500 {
+    color: #FF5C85 !important; /* High contrast red */
+  }
+
+  @keyframes scan {
+    0% { transform: translateY(-100%); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+
+  .animate-scan-line {
+    animation: scan 2s linear infinite;
+  }
+}
+
+/* Accessible high-contrast trigger target standard buttons */
+.accessible-button {
+  border: 4px solid #FFFFFF !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+  @apply active:scale-95 transition-all duration-300 rounded-[32px];
+}
+
+/* Direct feedback highlighted state for high usability */
+.accessible-button:focus,
+.accessible-button:hover,
+button:focus {
+  border-color: #FFFF00 !important;
+  box-shadow: 0 0 25px rgba(255, 230, 0, 0.45) !important;
+  outline: none !important;
+}
+
+/* Ensure bottom navigations use precise high contrast spacing and colors */
+nav.fixed {
+  background-color: #050811 !important;
+  border-top: 3px solid #FFFFFF !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px;
+}

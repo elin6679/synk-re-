@@ -1,0 +1,11 @@
+{
+  "name": "Remix: SYNK.",
+  "description": "AI fashion and beauty assistant for the visually impaired, translating visual signals into voice and touch.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
